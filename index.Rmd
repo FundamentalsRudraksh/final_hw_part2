@@ -1,0 +1,69 @@
+---
+title: "final_hw_part_2"
+author: "Rudraksh Sharma"
+date: "2026-01-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(rio) # Load the package for future use
+library(dplyr) # Load the package for future use
+library(tidyr) # Load the package for future use
+library(readr) # Load the package for future use
+```
+
+
+```{r}
+linkGit= "https://github.com/FundamentalsRudraksh/final_hw_part2/raw/refs/heads/main/HDR25_Statistical_Annex_HDI_Table.xlsx" # Get the link from GITHUB
+HDI_raw=rio::import(file = linkGit, col_names = FALSE) # Creates an object that stores the data
+```
+
+```{r}
+new_names <- paste(as.character(HDI_raw[3, ]), as.character(HDI_raw[4, ]), 
+                   as.character(HDI_raw[5, ]), as.character(HDI_raw[6, ]),
+                   as.character(HDI_raw[7, ]), sep = " ") # Combines rows 3,4,5,6,7 into a single row as they all are part of the column header/name
+
+names(HDI_raw) <- make.names(trimws(new_names), unique = TRUE) # Sets the combined column name from above as the new column names
+
+HDI_clean <- HDI_raw[-c(1:8), ] # Deletes rows 1 to 8 as they are not necessary
+
+names(HDI_clean) <- gsub("(^NA|NA$|NA\\.|\\.NA|\\.NA\\.)", "", names(HDI_clean)) # Removes any kind of NA from column names to simplify them 
+
+HDI_clean[c(" ", "1", "a", "a 1", "2", "b")] <- NULL # Drops these columns which were created due to merging the rows earlier as they do not contain any useful info are are mostly NA
+
+HDI_clean[, 4] <- NULL # Drops columns 4 which was just NA with no column name
+
+names(HDI_clean) <- gsub("^SDG[0-9.]+", "", names(HDI_clean)) # Removes SDG3, SDG4.3 etc from column names as they are of no use 
+
+names(HDI_clean) <- gsub("\\.", " ", names(HDI_clean)) # Replaces any . with spaces to ensure proper formatting and readability for the column names
+
+names(HDI_clean) <- gsub(" +", " ", names(HDI_clean)) # Combines multiple spaces into one space to ensure proper formatting and readability for the column names
+
+names(HDI_clean) # Shows the names of the columns for checking
+str(HDI_clean) # Shows the type and some entries for each column
+```
+
+```{r}
+HDI_clean <- HDI_clean[!is.na(HDI_clean$`HDI rank`), ] # Keeps countries with HDI rank
+HDI_final <- na.omit(HDI_clean) # Removes countries with NA or missing values
+```
+
+```{r}
+HDI_final[-which(names(HDI_final) == "Country")] <- 
+  lapply(HDI_final[-which(names(HDI_final) == "Country")], function(x) readr::parse_number(as.character(x))) # Keeps Country column as a char and changes the data type for all the other columns to numeric
+str(HDI_final) # Shows the data type and initial values for the columns
+
+means <- colMeans( HDI_final[, c(
+    "Life expectancy at birth years 2023",
+    "Expected years of schooling years 2023",
+    "Mean years of schooling years 2023",
+    "Gross national income GNI per capita 2021 PPP 2023"
+  )], na.rm = TRUE) # Calculates column wise mean for each of the following columns
+
+means # Displays the mean for each column computed above
+```
+
