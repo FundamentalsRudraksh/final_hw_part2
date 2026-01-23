@@ -16,7 +16,6 @@ library(tidyr) # Load the package for future use
 library(readr) # Load the package for future use
 ```
 
-
 ```{r}
 linkGit= "https://github.com/FundamentalsRudraksh/final_hw_part2/raw/refs/heads/main/HDR25_Statistical_Annex_HDI_Table.xlsx" # Get the link from GITHUB
 HDI_raw=rio::import(file = linkGit, col_names = FALSE) # Creates an object that stores the data
@@ -65,5 +64,9 @@ means <- colMeans( HDI_final[, c(
   )], na.rm = TRUE) # Calculates column wise mean for each of the following columns
 
 means # Displays the mean for each column computed above
+```
+
+```{r}
+readr::write_csv(HDI_final, "Final_HDI.csv") # Creates a csv file with everything cleaned and updated for the original file
 ```
 
